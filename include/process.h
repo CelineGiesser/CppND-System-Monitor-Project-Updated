@@ -23,6 +23,7 @@ class Process {
  private:
  int pid_;
  float cpuUtil_;
+ long upTimeD_{0};
 };
 
 #endif
