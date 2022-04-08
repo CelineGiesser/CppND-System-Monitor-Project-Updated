@@ -46,12 +46,16 @@ void Process:: CpuUtilizationCalc() {
     // Calculation without time delay
     vector<string> cpuParameter = LinuxParser::ProcessCpuUtilization(Pid());
     long timeTotal=std::stol(cpuParameter[0])+std::stol(cpuParameter[1])+std::stol(cpuParameter[2])+std::stol(cpuParameter[3]);
-    long upTimeD= (LinuxParser::UpTime())*clockTicks-(LinuxParser::UpTime(Pid()));
-    cpuUtil_=(static_cast<float>(timeTotal)/static_cast<float>(upTimeD));
+    upTimeD_= (LinuxParser::UpTime())-(LinuxParser::UpTime(Pid())/clockTicks);
+    cpuUtil_=(static_cast<float>(timeTotal)/static_cast<float>(upTimeD_*clockTicks));
     }
 
 // Return the command that generated this process
-string Process::Command() { return LinuxParser::Command(Pid()); }
+string Process::Command() { 
+      string commandLine=LinuxParser::Command(Pid());
+    if (commandLine.length()>40 ){
+        commandLine=commandLine.substr(0,40)+"...";}
+    return commandLine; }
 
 // Return this process's memory utilization in MB
 string Process::Ram() { return to_string(stol(LinuxParser::Ram(Pid()))/1000); }
@@ -60,7 +64,7 @@ string Process::Ram() { return to_string(stol(LinuxParser::Ram(Pid()))/1000); }
 string Process::User() { return LinuxParser::User(Pid()); }
 
 // Return the age of this process (in seconds)
-long int Process::UpTime() { return LinuxParser::UpTime(Pid()); }
+long int Process::UpTime() { return upTimeD_; }
 
 // Overload the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& a) const { 
